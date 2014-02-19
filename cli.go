@@ -68,9 +68,7 @@ func Create(filename string, v interface{}) error {
 func initConfigs() {
 	// core
 	u, err := user.Current()
-	if err != nil {
-		panic(err)
-	}
+	check(err)
 	cloudcorepath := path.Join(u.HomeDir, CLOUDCORE)
 	if ok := IsExists(cloudcorepath); !ok {
 		core := Core{
