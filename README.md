@@ -11,7 +11,7 @@ go get github.com/OShalakhin/cloud
 go get -u github.com/OShalakhin/cloud
 ```
 
-## Command line interface
+## CLI
 
 ```bash
 $ cloud help
@@ -36,6 +36,7 @@ See [Godoc](http://godoc.org/github.com/OShalakhin/cloud)
 
 - `cloud sync [container name]`
 - `cloud add [folder|file]`
+- `cloud rm [folder|file]`
 - `cloud update [folder|file]`
 - improve `cloud sync` verifying if file was changed to upload it or not
 - add `.cloudignore` and support the same behaviour like `.gitignore` (regexps)
