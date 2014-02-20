@@ -42,7 +42,8 @@ See [Godoc](http://godoc.org/github.com/OShalakhin/cloud)
 - `cloud add [folder|file]`
 - `cloud rm [folder|file]`
 - `cloud update [folder|file]`
+- `cloud ignore [folder/file]`
 - `cloud clear`
 - improve `cloud sync` verifying if file was changed to upload it or not
-- add `.cloudignore` and support the same behaviour like `.gitignore` (regexps)
-- add `cloud ignore [folder/file]`
+- support `.cloudignore` and support the same behaviour like `.gitignore` (regexps)
+- `cloud -v` to show verbose information
