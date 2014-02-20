@@ -21,9 +21,10 @@ const (
 type (
 	// Provider for the cloud like Amazon, Rackspace etc.
 	Provider struct {
-		Name   string `json:"name"`
-		Key    string `json:"key"`
-		Secret string `json:"secret"`
+		Name    string `json:"name"`
+		Key     string `json:"key"`
+		Secret  string `json:"secret,omitempty"`
+		AuthURL string `json:"auth_url,omitempty"`
 	}
 
 	// Core is ~/.cloudcore struct
@@ -36,11 +37,46 @@ type (
 		Provider string `json:"provider"`
 		Name     string `json:"name"`
 	}
-	// Containers is config for .cloud
-	Containers struct {
+	// Cloud is config for .cloud
+	Cloud struct {
 		Containers []Container `json:"containers"`
 	}
 )
+
+// GetCore returns parsed .cloudcore struct
+func GetCore() (Core, error) {
+	core := Core{}
+	// open file
+	u, err := user.Current()
+	if err != nil {
+		return core, err
+	}
+	corepath := path.Join(u.HomeDir, CLOUDCORE)
+	data, err := ioutil.ReadFile(corepath)
+	if err != nil {
+		return core, err
+	}
+	// parse it
+	if err = json.Unmarshal(data, &core); err != nil {
+		return core, err
+	}
+	return core, nil
+}
+
+// GetCloud returns parsed .cloud struct
+func GetCloud() (Cloud, error) {
+	cloud := Cloud{}
+	// open file
+	data, err := ioutil.ReadFile(CLOUD)
+	if err != nil {
+		return cloud, err
+	}
+	// parse
+	if err = json.Unmarshal(data, &cloud); err != nil {
+		return cloud, err
+	}
+	return cloud, nil
+}
 
 // IsExists checks if config exists
 func IsExists(filename string) bool {
@@ -74,9 +110,10 @@ func initConfigs() {
 		core := Core{
 			Providers: []Provider{
 				{
-					Name:   "CloudFiles",
-					Key:    "mykeyhere",
-					Secret: "mysecrethere",
+					Name:    "CloudFiles",
+					Key:     "mykeyhere",
+					Secret:  "mysecrethere",
+					AuthURL: "https://storage101.lon3.clouddrive.com/v1/MossoCloudFS_aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee/",
 				},
 			},
 		}
@@ -87,7 +124,7 @@ func initConfigs() {
 	}
 	// cloud
 	if ok := IsExists(CLOUD); !ok {
-		cloud := Containers{
+		cloud := Cloud{
 			Containers: []Container{
 				{
 					Provider: "CloudFiles",
@@ -101,4 +138,20 @@ func initConfigs() {
 		fmt.Println("Initializing file:\t", CLOUD)
 	}
 	// TODO cloudignore
+}
+
+// Sync folder with defined container string (default is the first container in the list)
+func Sync(container string) {
+	fmt.Println("Begin sync with container: " + container)
+	// get .cloudcore
+	core, err := GetCore()
+	check(err)
+	fmt.Println(core)
+	// get .cloud
+	cloud, err := GetCloud()
+	check(err)
+	fmt.Println(cloud)
+	// auth container
+	// walk files
+	// upload file to the cloud
 }
