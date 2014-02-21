@@ -2,7 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/OShalakhin/cloud/storage"
+	"github.com/OShalakhin/cloud/storage/cloudfiles"
+	"github.com/ncw/swift"
 	"io/ioutil"
 	"os"
 	"os/user"
@@ -18,34 +22,9 @@ const (
 	CLOUDIGNORE = ".cloudignore"
 )
 
-type (
-	// Provider for the cloud like Amazon, Rackspace etc.
-	Provider struct {
-		Name    string `json:"name"`
-		Key     string `json:"key"`
-		Secret  string `json:"secret,omitempty"`
-		AuthURL string `json:"auth_url,omitempty"`
-	}
-
-	// Core is ~/.cloudcore struct
-	Core struct {
-		Providers []Provider `json:"providers"`
-	}
-
-	// Container data to work with later
-	Container struct {
-		Provider string `json:"provider"`
-		Name     string `json:"name"`
-	}
-	// Cloud is config for .cloud
-	Cloud struct {
-		Containers []Container `json:"containers"`
-	}
-)
-
 // GetCore returns parsed .cloudcore struct
-func GetCore() (Core, error) {
-	core := Core{}
+func GetCore() (storage.Core, error) {
+	core := storage.Core{}
 	// open file
 	u, err := user.Current()
 	if err != nil {
@@ -63,9 +42,20 @@ func GetCore() (Core, error) {
 	return core, nil
 }
 
+// GetProvider from container string from the core config
+func GetProvider(container *storage.Container, core *storage.Core) (storage.Provider, error) {
+	for _, v := range core.Providers {
+		if v.Provider == container.Provider {
+			fmt.Println("Provider:", v.Provider)
+			return v, nil
+		}
+	}
+	return storage.Provider{}, errors.New("no provider with such name found")
+}
+
 // GetCloud returns parsed .cloud struct
-func GetCloud() (Cloud, error) {
-	cloud := Cloud{}
+func GetCloud() (storage.Cloud, error) {
+	cloud := storage.Cloud{}
 	// open file
 	data, err := ioutil.ReadFile(CLOUD)
 	if err != nil {
@@ -76,6 +66,23 @@ func GetCloud() (Cloud, error) {
 		return cloud, err
 	}
 	return cloud, nil
+}
+
+// GetContainer by name
+func GetContainer(name string, cloud *storage.Cloud) (storage.Container, error) {
+	if len(cloud.Containers) == 0 {
+		return storage.Container{}, errors.New(".cloud has no containers")
+	}
+	if name == "" {
+		fmt.Println("First container to be used:", cloud.Containers[0].Name)
+		return cloud.Containers[0], nil
+	}
+	for _, v := range cloud.Containers {
+		if v.Name == name {
+			return v, nil
+		}
+	}
+	return storage.Container{}, errors.New("no container found")
 }
 
 // IsExists checks if config exists
@@ -93,10 +100,10 @@ func IsExists(filename string) bool {
 func Create(filename string, v interface{}) error {
 	template, err := json.MarshalIndent(v, "", "    ")
 	if err != nil {
-		return err
+		panic(err)
 	}
-	if err := ioutil.WriteFile(filename, template, 0644); err != nil {
-		return err
+	if err = ioutil.WriteFile(filename, template, 0644); err != nil {
+		panic(err)
 	}
 	return nil
 }
@@ -104,16 +111,19 @@ func Create(filename string, v interface{}) error {
 func initConfigs() {
 	// core
 	u, err := user.Current()
-	check(err)
+	if err != nil {
+		panic(err)
+	}
 	cloudcorepath := path.Join(u.HomeDir, CLOUDCORE)
 	if ok := IsExists(cloudcorepath); !ok {
-		core := Core{
-			Providers: []Provider{
+		core := storage.Core{
+			Providers: []storage.Provider{
 				{
-					Name:    "CloudFiles",
-					Key:     "mykeyhere",
-					Secret:  "mysecrethere",
-					AuthURL: "https://storage101.lon3.clouddrive.com/v1/MossoCloudFS_aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee/",
+					Provider: "CloudFiles",
+					Name:     "myaccountname",
+					Key:      "mykeyhere",
+					Secret:   "mysecrethere",
+					AuthURL:  "LON",
 				},
 			},
 		}
@@ -124,8 +134,8 @@ func initConfigs() {
 	}
 	// cloud
 	if ok := IsExists(CLOUD); !ok {
-		cloud := Cloud{
-			Containers: []Container{
+		cloud := storage.Cloud{
+			Containers: []storage.Container{
 				{
 					Provider: "CloudFiles",
 					Name:     "containername",
@@ -140,18 +150,50 @@ func initConfigs() {
 	// TODO cloudignore
 }
 
-// Sync folder with defined container string (default is the first container in the list)
-func Sync(container string) {
-	fmt.Println("Begin sync with container: " + container)
+// Sync folder with defined container name string (default is the first container in the list in local .cloud)
+func Sync(name string) {
+	fmt.Printf("Beginning sync with container: \"%s\"\n", name)
 	// get .cloudcore
 	core, err := GetCore()
-	check(err)
-	fmt.Println(core)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Found\t.cloudcore")
 	// get .cloud
 	cloud, err := GetCloud()
-	check(err)
-	fmt.Println(cloud)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Found\t.cloud")
 	// auth container
-	// walk files
-	// upload file to the cloud
+	// get container by name
+	c, err := GetContainer(name, &cloud)
+	if err != nil {
+		panic(err)
+	}
+	// get container provider
+	var s storage.Storage
+	switch {
+	case c.Provider == storage.CLOUDFILES:
+		p, err := GetProvider(&c, &core)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println("Container found:", c.Name)
+		if err != nil {
+			panic(err)
+		}
+		s = &cloudfiles.Storage{p, swift.Connection{}}
+	default:
+		// TODO what would be better to write here
+		fmt.Println("Something went wrong!")
+		return
+	}
+	// Authenticate
+	if err = s.Authenticate(); err != nil {
+		panic(err)
+	}
+	fmt.Println("Authenticated")
+	return
+	// walk files upload file to the cloud
 }
