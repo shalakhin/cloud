@@ -1,14 +1,15 @@
 package storage
 
-// Storage interface for abstraction
 type (
+	// Storage interface for abstraction
 	Storage interface {
-		Create(filename string, data []byte) error
-		Read(filename string) ([]byte, error)
-		Update(filename string, data []byte) error
-		Upsert(filename string, data []byte) error
-		Delete(filename string) error
+		Create(container, filename string, data []byte) error
+		Read(container, filename string) ([]byte, error)
+		Update(container, filename string, data []byte) error
+		// Upsert(filename string, data []byte) error
+		Delete(container, filename string) error
 		Authenticate() error
+		GetContainer() (*Container, error)
 	}
 
 	// Provider for the cloud like Amazon, Rackspace etc.

@@ -1,13 +1,16 @@
 package cloudfiles
 
 import (
+	"errors"
+	"fmt"
 	"github.com/OShalakhin/cloud/storage"
 	"github.com/ncw/swift"
 )
 
 // Storage is an implementation of Rackspace CloudFiles cloud storage
 type Storage struct {
-	storage.Provider
+	Provider   storage.Provider
+	Container  storage.Container
 	Connection swift.Connection
 }
 
@@ -21,6 +24,14 @@ func (s *Storage) GetAuthURL() string {
 	default:
 		return authUS
 	}
+}
+
+// GetContainer from cloudfiles.Storage
+func (s *Storage) GetContainer() (*storage.Container, error) {
+	if s.Container.Name == "" || s.Container.Provider == "" {
+		return nil, errors.New("empty container")
+	}
+	return &s.Container, nil
 }
 
 // Authenticate CloudFiles storage
@@ -37,26 +48,30 @@ func (s *Storage) Authenticate() error {
 }
 
 // Create file
-func (s *Storage) Create(filename string, data []byte) error {
+func (s *Storage) Create(container, filename string, data []byte) error {
+	// s.Authenticate()
+	if err := s.Connection.ObjectPutBytes(s.Container.Name, filename, data, ""); err != nil {
+		return fmt.Errorf(err.Error())
+	}
 	return nil
 }
 
 // Read file
-func (s *Storage) Read(filename string) ([]byte, error) {
+func (s *Storage) Read(container, filename string) ([]byte, error) {
 	return []byte("OK"), nil
 }
 
 // Update file
-func (s *Storage) Update(filename string, data []byte) error {
+func (s *Storage) Update(container, filename string, data []byte) error {
 	return nil
 }
 
 // Upsert file
-func (s *Storage) Upsert(filename string, data []byte) error {
-	return nil
-}
+// func (s *Storage) Upsert(filename string, data []byte) error {
+// 	return nil
+// }
 
 // Delete file
-func (s *Storage) Delete(filename string) error {
+func (s *Storage) Delete(container, filename string) error {
 	return nil
 }
