@@ -8,7 +8,7 @@
 //     cloud help
 //
 // `~/.cloudcore` stores credentials
-// 
+//
 //     {
 //         "providers": [
 //             {
@@ -19,12 +19,12 @@
 //             }
 //         ]
 //     }
-// 
+//
 // `.cloud` must be in the root folder you want to sync. Here you can define
 // which containers to synchronize and define storage (CloudFiles, S3). More
 // than one container is useful if you test with one container (even other storage)
 // and deploy in another container.
-// 
+//
 //     {
 //         "containers": [
 //             {
@@ -37,12 +37,12 @@
 //             }
 //         ]
 //     }
-// 
+//
 // `.cloudignore` is just like `.gitignore` file where you can add regexps which
 // files or folders to ignore.
-// 
+//
 //     // Put here what to ignore. Syntax like .gitignore
 //     .cloud
 //     .cloudignore
-// 
+//
 package main

@@ -248,11 +248,10 @@ func Sync(name string) {
 				if err != nil {
 					panic(err)
 				}
-				fmt.Printf("Sync\t%s", fp)
+				fmt.Println("Sync\t", fp)
 				if err = s.Create(fp, data); err != nil {
 					panic(err)
 				}
-				fmt.Printf("\t[OK]\n")
 			}
 		}
 		return nil

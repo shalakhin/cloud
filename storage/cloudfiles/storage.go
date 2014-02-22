@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/OShalakhin/cloud/storage"
 	"github.com/ncw/swift"
+	"time"
 )
 
 // Storage is an implementation of Rackspace CloudFiles cloud storage
@@ -44,6 +45,8 @@ func (s *Storage) Authenticate() error {
 	if err := s.Connection.Authenticate(); err != nil {
 		panic(err)
 	}
+	// Set larger data timeout to reduce number of failed transfer
+	s.Connection.Timeout = time.Duration(90) * time.Second
 	return nil
 }
 
