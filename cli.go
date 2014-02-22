@@ -17,12 +17,12 @@ import (
 )
 
 const (
-	// CLOUDCORE cloud core config name
-	CLOUDCORE = ".cloudcore"
-	// CLOUD cloud container config name
-	CLOUD = ".cloud"
-	// CLOUDIGNORE cloud ignore config name
-	CLOUDIGNORE = ".cloudignore"
+	// cloudCoreFile cloud core config name
+	cloudCoreFile = ".cloudcore"
+	// cloudFile cloud container config name
+	cloudFile = ".cloud"
+	// cloudIgnoreFile ignore config name
+	cloudIgnoreFile = ".cloudignore"
 )
 
 var (
@@ -31,7 +31,7 @@ var (
 
 // GetIgnoreList returns pattern to ignore paths based on .cloudignore
 func GetIgnoreList() []string {
-	f, err := os.Open(CLOUDIGNORE)
+	f, err := os.Open(cloudIgnoreFile)
 	if err != nil {
 		return []string{"a^"}
 	}
@@ -57,7 +57,7 @@ func GetCore() (storage.Core, error) {
 	if err != nil {
 		return core, err
 	}
-	corepath := path.Join(u.HomeDir, CLOUDCORE)
+	corepath := path.Join(u.HomeDir, cloudCoreFile)
 	data, err := ioutil.ReadFile(corepath)
 	if err != nil {
 		return core, err
@@ -84,7 +84,7 @@ func GetProvider(container *storage.Container, core *storage.Core) (storage.Prov
 func GetCloud() (storage.Cloud, error) {
 	cloud := storage.Cloud{}
 	// open file
-	data, err := ioutil.ReadFile(CLOUD)
+	data, err := ioutil.ReadFile(cloudFile)
 	if err != nil {
 		return cloud, err
 	}
@@ -141,7 +141,7 @@ func initConfigs() {
 	if err != nil {
 		panic(err)
 	}
-	cloudcorepath := path.Join(u.HomeDir, CLOUDCORE)
+	cloudcorepath := path.Join(u.HomeDir, cloudCoreFile)
 	if ok := IsExists(cloudcorepath); !ok {
 		core := storage.Core{
 			Providers: []storage.Provider{
@@ -160,7 +160,7 @@ func initConfigs() {
 		fmt.Println("Initializing file:\t", cloudcorepath)
 	}
 	// cloud
-	if ok := IsExists(CLOUD); !ok {
+	if ok := IsExists(cloudFile); !ok {
 		cloud := storage.Cloud{
 			Containers: []storage.Container{
 				{
@@ -169,17 +169,17 @@ func initConfigs() {
 				},
 			},
 		}
-		if err := CreateConfig(CLOUD, cloud); err != nil {
+		if err := CreateConfig(cloudFile, cloud); err != nil {
 			panic(err)
 		}
-		fmt.Println("Initializing file:\t", CLOUD)
+		fmt.Println("Initializing file:\t", cloudFile)
 	}
 	// cloudignore
-	if ok := IsExists(CLOUDIGNORE); !ok {
-		if err = ioutil.WriteFile(CLOUDIGNORE, []byte("// Put here what to ignore. Syntax like .gitignore\n.cloud\n.cloudignore\n"), 0644); err != nil {
+	if ok := IsExists(cloudIgnoreFile); !ok {
+		if err = ioutil.WriteFile(cloudIgnoreFile, []byte("// Put here what to ignore. Syntax like .gitignore\n.cloud\n.cloudignore\n"), 0644); err != nil {
 			panic(err)
 		}
-		fmt.Println("Initializing file:\t", CLOUDIGNORE)
+		fmt.Println("Initializing file:\t", cloudIgnoreFile)
 	}
 }
 
@@ -216,7 +216,12 @@ func Sync(name string) {
 		if err != nil {
 			panic(err)
 		}
-		s = &cloudfiles.Storage{p, swift.Connection{}}
+		s = &cloudfiles.Storage{
+			Provider:   p,
+			Container:  c,
+			Connection: swift.Connection{},
+		}
+		fmt.Println(s.GetContainer())
 	default:
 		// TODO what would be better to write here
 		fmt.Println("Something went wrong!")
@@ -240,7 +245,15 @@ func Sync(name string) {
 				panic(err)
 			}
 			if !IsIgnored(fp) {
-				fmt.Println(fp)
+				data, err := ioutil.ReadFile(fp)
+				if err != nil {
+					panic(err)
+				}
+				fmt.Printf("Sync\t%s", fp)
+				if err = s.Create(c.Name, fp, data); err != nil {
+					panic(err)
+				}
+				fmt.Printf("\t[OK]\n")
 			}
 		}
 		return nil
