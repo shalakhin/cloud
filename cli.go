@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -11,6 +12,8 @@ import (
 	"os"
 	"os/user"
 	"path"
+	"path/filepath"
+	"regexp"
 )
 
 const (
@@ -21,6 +24,30 @@ const (
 	// CLOUDIGNORE cloud ignore config name
 	CLOUDIGNORE = ".cloudignore"
 )
+
+var (
+	ignorelist = GetIgnoreList()
+)
+
+// GetIgnoreList returns pattern to ignore paths based on .cloudignore
+func GetIgnoreList() []string {
+	f, err := os.Open(CLOUDIGNORE)
+	if err != nil {
+		return []string{"a^"}
+	}
+	str := []string{}
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		text := scanner.Text()
+		if text[0:2] != "//" {
+			str = append(str, text)
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		panic(err)
+	}
+	return str
+}
 
 // GetCore returns parsed .cloudcore struct
 func GetCore() (storage.Core, error) {
@@ -96,8 +123,8 @@ func IsExists(filename string) bool {
 	return true
 }
 
-// Create config
-func Create(filename string, v interface{}) error {
+// CreateConfig with filename and defined structure
+func CreateConfig(filename string, v interface{}) error {
 	template, err := json.MarshalIndent(v, "", "    ")
 	if err != nil {
 		panic(err)
@@ -127,7 +154,7 @@ func initConfigs() {
 				},
 			},
 		}
-		if err := Create(cloudcorepath, core); err != nil {
+		if err := CreateConfig(cloudcorepath, core); err != nil {
 			panic(err)
 		}
 		fmt.Println("Initializing file:\t", cloudcorepath)
@@ -142,12 +169,18 @@ func initConfigs() {
 				},
 			},
 		}
-		if err := Create(CLOUD, cloud); err != nil {
+		if err := CreateConfig(CLOUD, cloud); err != nil {
 			panic(err)
 		}
 		fmt.Println("Initializing file:\t", CLOUD)
 	}
-	// TODO cloudignore
+	// cloudignore
+	if ok := IsExists(CLOUDIGNORE); !ok {
+		if err = ioutil.WriteFile(CLOUDIGNORE, []byte("// Put here what to ignore. Syntax like .gitignore\n.cloud\n.cloudignore\n"), 0644); err != nil {
+			panic(err)
+		}
+		fmt.Println("Initializing file:\t", CLOUDIGNORE)
+	}
 }
 
 // Sync folder with defined container name string (default is the first container in the list in local .cloud)
@@ -179,7 +212,7 @@ func Sync(name string) {
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println("Container found:", c.Name)
+		fmt.Println("Container found:\t", c.Name)
 		if err != nil {
 			panic(err)
 		}
@@ -194,6 +227,40 @@ func Sync(name string) {
 		panic(err)
 	}
 	fmt.Println("Authenticated")
-	return
 	// walk files upload file to the cloud
+	dir, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	if err = filepath.Walk(dir, func(filename string, info os.FileInfo, err error) error {
+		// upload only files, not directories
+		if !info.IsDir() {
+			fp, err := filepath.Rel(dir, filename)
+			if err != nil {
+				panic(err)
+			}
+			if !IsIgnored(fp) {
+				fmt.Println(fp)
+			}
+		}
+		return nil
+	}); err != nil {
+		panic(err)
+	}
+}
+
+// IsIgnored path or not. Data is taken from .cloudignore
+func IsIgnored(filename string) bool {
+	// TODO I am sure it can be done in more elegant and efficient way
+	for _, v := range ignorelist {
+		re, err := regexp.Compile("^" + v)
+		if err != nil {
+			panic(err)
+		}
+		// if match found file must be ignored
+		if re.MatchString(filename) {
+			return true
+		}
+	}
+	return false
 }

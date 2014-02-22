@@ -16,6 +16,7 @@ const (
 	COMMANDS = "COMMANDS\n" +
 		"\tinit\tinitialize .cloudcore and .cloud files\n" +
 		"\tsync\tsynchronize folder with the cloud\n" +
+		"\tignore\tignore particular file with .cloudignore\n" +
 		"\tclear\tclear container\n" +
 		"\thelp\tshow this message\n\n"
 	// CONTRIBUTORS shows package author & contributors
@@ -44,6 +45,8 @@ func main() {
 			container = args[1]
 		}
 		Sync(container)
+	case args[0] == "ignore":
+		fmt.Println("Nothing here yet...")
 	case args[0] == "clear":
 		fmt.Println("Nothing here yet...")
 	case args[0] == "help":
