@@ -48,7 +48,7 @@ func (s *Storage) Authenticate() error {
 }
 
 // Create file
-func (s *Storage) Create(container, filename string, data []byte) error {
+func (s *Storage) Create(filename string, data []byte) error {
 	// s.Authenticate()
 	if err := s.Connection.ObjectPutBytes(s.Container.Name, filename, data, ""); err != nil {
 		return fmt.Errorf(err.Error())
@@ -57,13 +57,22 @@ func (s *Storage) Create(container, filename string, data []byte) error {
 }
 
 // Read file
-func (s *Storage) Read(container, filename string) ([]byte, error) {
-	return []byte("OK"), nil
+func (s *Storage) Read(filename string) ([]byte, error) {
+	data, err := s.Connection.ObjectGetBytes(s.Container.Name, filename)
+	if err != nil {
+		return []byte(""), err
+	}
+	return data, nil
 }
 
 // Update file
-func (s *Storage) Update(container, filename string, data []byte) error {
-	return nil
+func (s *Storage) Update(filename string, data []byte) error {
+	// delete
+	if err := s.Delete(filename); err != nil {
+		panic(err)
+	}
+	// create new
+	return s.Create(filename, data)
 }
 
 // Upsert file
@@ -72,6 +81,9 @@ func (s *Storage) Update(container, filename string, data []byte) error {
 // }
 
 // Delete file
-func (s *Storage) Delete(container, filename string) error {
+func (s *Storage) Delete(filename string) error {
+	if err := s.Connection.ObjectDelete(s.Container.Name, filename); err != nil {
+		return err
+	}
 	return nil
 }

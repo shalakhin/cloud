@@ -5,11 +5,11 @@ package storage
 type (
 	// Storage interface for abstraction
 	Storage interface {
-		Create(container, filename string, data []byte) error
-		Read(container, filename string) ([]byte, error)
-		Update(container, filename string, data []byte) error
+		Create(filename string, data []byte) error
+		Read(filename string) ([]byte, error)
+		Update(filename string, data []byte) error
 		// Upsert(filename string, data []byte) error
-		Delete(container, filename string) error
+		Delete(filename string) error
 		Authenticate() error
 		GetContainer() (*Container, error)
 	}

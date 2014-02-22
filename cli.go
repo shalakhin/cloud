@@ -221,7 +221,6 @@ func Sync(name string) {
 			Container:  c,
 			Connection: swift.Connection{},
 		}
-		fmt.Println(s.GetContainer())
 	default:
 		// TODO what would be better to write here
 		fmt.Println("Something went wrong!")
@@ -250,10 +249,11 @@ func Sync(name string) {
 					panic(err)
 				}
 				fmt.Printf("Sync\t%s", fp)
-				if err = s.Create(c.Name, fp, data); err != nil {
+				if err = s.Create(fp, data); err != nil {
 					panic(err)
 				}
 				fmt.Printf("\t[OK]\n")
+				fmt.Println(s.Read(fp))
 			}
 		}
 		return nil
