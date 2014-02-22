@@ -253,7 +253,6 @@ func Sync(name string) {
 					panic(err)
 				}
 				fmt.Printf("\t[OK]\n")
-				fmt.Println(s.Read(fp))
 			}
 		}
 		return nil
