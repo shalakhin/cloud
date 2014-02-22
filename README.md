@@ -1,6 +1,8 @@
 # cloud
 
-Sync your data with cloud storages (like Amazon S3, Rackspace CloudFiles etc.)
+version: **0.1.0**
+
+Sync your files with cloud storages (like Amazon S3, Rackspace CloudFiles etc.)
 
 I decided it would be great to have simple abstaction layer for cloud storage
 to sync data with CLI and to integrate it inside the app.
@@ -10,11 +12,53 @@ That's why `github.com/OShalakhin/cloud` is CLI.
 `github.com/OShalakhin/cloud/storage` and other parts are for integration into
 the apps. Tests will be supplied later.
 
-version: **0.1.0**
-
 - supported `init`, `sync` and `help` commands
 - included documentation
 - abstract structure
+
+`~/.cloudcore` stores credentials
+
+```json
+{
+    "providers": [
+        {
+            "provider": "CloudFiles",
+            "name": "mynamehere",
+            "key": "myapikey",
+            "auth_url": "LON"
+        }
+    ]
+}
+```
+
+`.cloud` must be in the root folder you want to sync. Here you can define
+which containers to synchronize and define storage (CloudFiles, S3). More
+than one container is useful if you test with one container (even other storage)
+and deploy in another container.
+
+```json
+{
+    "containers": [
+        {
+            "provider": "CloudFiles",
+            "name": "mycontainer1"
+        },
+        {
+            "provider": "CloudFiles",
+            "name": "mycontainer2"
+        }
+    ]
+}
+```
+
+`.cloudignore` is just like `.gitignore` file where you can add regexps which
+files or folders to ignore.
+
+```
+// Put here what to ignore. Syntax like .gitignore
+.cloud
+.cloudignore
+```
 
 ## Install & Update
 
