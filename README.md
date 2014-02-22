@@ -2,7 +2,19 @@
 
 Sync your data with cloud storages (like Amazon S3, Rackspace CloudFiles etc.)
 
-version: **0.0.0**
+I decided it would be great to have simple abstaction layer for cloud storage
+to sync data with CLI and to integrate it inside the app.
+
+That's why `github.com/OShalakhin/cloud` is CLI.
+
+`github.com/OShalakhin/cloud/storage` and other parts are for integration into
+the apps. Tests will be supplied later.
+
+version: **0.1.0**
+
+- supported `init`, `sync` and `help` commands
+- included documentation
+- abstract structure
 
 ## Install & Update
 
@@ -22,7 +34,7 @@ DESCRIPTION
     Sync your data with cloud storages (like Amazon S3, Rackspace CloudFiles etc.)
 
 VERSION
-     0.1
+     0.1.0
 
 COMMANDS
     init    initialize .cloudcore and .cloud files

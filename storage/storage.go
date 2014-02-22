@@ -1,3 +1,5 @@
+// Package storage provides abstract layer for cloud storages
+// that should provide basically CRUD and Authentication methods.
 package storage
 
 type (

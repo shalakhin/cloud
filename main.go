@@ -8,7 +8,7 @@ import (
 const (
 	// VERSION of package
 	VERSION = "VERSION\n" +
-		"\t 0.1\n\n"
+		"\t 0.1.0\n\n"
 	// DESCRIPTION what is package for
 	DESCRIPTION = "DESCRIPTION\n" +
 		"\tSync your data with cloud storages (like Amazon S3, Rackspace CloudFiles etc.)\n\n"
