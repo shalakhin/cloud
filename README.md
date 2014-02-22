@@ -40,12 +40,15 @@ See [Godoc](http://godoc.org/github.com/OShalakhin/cloud)
 
 ## TODO
 
-- &#10003; `cloud sync [container name]`
+- &#10003; `cloud init `
+- &#10003; initialize `~/.cloudcore`, `.cloud` and `.cloudignore` with samples
+- &#10003; `cloud sync [container name]` (almost - create operation left)
+- &#10003; support `.cloudignore` and support the same behaviour like `.gitignore` (regexps)
+- &#10003; `cloud help`
+- `cloud ignore [folder/file]`
+- `cloud clear`
 - `cloud add [folder|file]`
 - `cloud rm [folder|file]`
 - `cloud update [folder|file]`
-- `cloud ignore [folder/file]`
-- `cloud clear`
 - improve `cloud sync` verifying if file was changed to upload it or not
-- support `.cloudignore` and support the same behaviour like `.gitignore` (regexps)
 - `cloud -v` to show verbose information
