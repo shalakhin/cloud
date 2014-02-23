@@ -49,6 +49,7 @@ func (s *Storage) Authenticate() error {
 	s.Connection.UserName = s.Provider.Name
 	s.Connection.ApiKey = s.Provider.Key
 	s.Connection.AuthUrl = s.GetAuthURL()
+	s.Connection.Region = s.Provider.AuthURL
 
 	if err := s.Connection.Authenticate(); err != nil {
 		panic(err)
@@ -104,7 +105,10 @@ func (s *Storage) Delete(filename string) error {
 // GetURL returns url to the storage to use i.e. in templates
 func (s *Storage) GetURL() *url.URL {
 	if !s.Connection.Authenticated() {
-		return new(url.URL)
+		err := s.Connection.Authenticate()
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	u := s.Info.URL
