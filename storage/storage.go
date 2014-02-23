@@ -2,6 +2,10 @@
 // that should provide basically CRUD and Authentication methods.
 package storage
 
+import (
+	"net/url"
+)
+
 type (
 	// Storage interface for abstraction
 	Storage interface {
@@ -12,6 +16,7 @@ type (
 		Delete(filename string) error
 		Authenticate() error
 		GetContainer() (*Container, error)
+		GetURL() (*url.URL, error)
 	}
 
 	// Provider for the cloud like Amazon, Rackspace etc.

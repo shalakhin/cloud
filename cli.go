@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"github.com/OShalakhin/cloud/storage"
 	"github.com/OShalakhin/cloud/storage/cloudfiles"
-	"github.com/ncw/swift"
+	"github.com/ncw/swift/rs"
 	"io/ioutil"
 	"os"
 	"os/user"
@@ -219,7 +219,8 @@ func Sync(name string) {
 		s = &cloudfiles.Storage{
 			Provider:   p,
 			Container:  c,
-			Connection: swift.Connection{},
+			Info:       &cloudfiles.Info{},
+			Connection: rs.RsConnection{},
 		}
 	default:
 		// TODO what would be better to write here

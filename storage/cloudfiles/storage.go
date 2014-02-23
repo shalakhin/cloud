@@ -4,16 +4,24 @@ import (
 	"errors"
 	"fmt"
 	"github.com/OShalakhin/cloud/storage"
-	"github.com/ncw/swift"
+	"github.com/ncw/swift/rs"
+	"net/url"
 	"time"
 )
 
-// Storage is an implementation of Rackspace CloudFiles cloud storage
-type Storage struct {
-	Provider   storage.Provider
-	Container  storage.Container
-	Connection swift.Connection
-}
+type (
+	// Storage is an implementation of Rackspace CloudFiles cloud storage
+	Storage struct {
+		Provider   storage.Provider
+		Container  storage.Container
+		Info       *Info
+		Connection rs.RsConnection
+	}
+	// Info holds storage info
+	Info struct {
+		URL *url.URL
+	}
+)
 
 // GetAuthURL gets auth URL based on storage provider AuthURL (ORD, DFW, HKG, LON, IAD, SYD)
 func (s *Storage) GetAuthURL() string {
@@ -37,16 +45,18 @@ func (s *Storage) GetContainer() (*storage.Container, error) {
 
 // Authenticate CloudFiles storage
 func (s *Storage) Authenticate() error {
-	s.Connection = swift.Connection{
-		UserName: s.Provider.Name,
-		ApiKey:   s.Provider.Key,
-		AuthUrl:  s.GetAuthURL(),
-	}
+	s.Connection = rs.RsConnection{}
+	s.Connection.UserName = s.Provider.Name
+	s.Connection.ApiKey = s.Provider.Key
+	s.Connection.AuthUrl = s.GetAuthURL()
+
 	if err := s.Connection.Authenticate(); err != nil {
 		panic(err)
 	}
 	// Set larger data timeout to reduce number of failed transfer
 	s.Connection.Timeout = time.Duration(90) * time.Second
+	// Set Info.URL empty as it must be initialized by GetURL
+	s.Info.URL = new(url.URL)
 	return nil
 }
 
@@ -89,4 +99,26 @@ func (s *Storage) Delete(filename string) error {
 		return err
 	}
 	return nil
+}
+
+// GetURL returns url to the storage to use i.e. in templates
+func (s *Storage) GetURL() (*url.URL, error) {
+	if !s.Connection.Authenticated() {
+		return new(url.URL), errors.New("not authenticated")
+	}
+
+	u := s.Info.URL
+	// generate it if not exist
+	if u.RequestURI() == "/" {
+		h, err := s.Connection.ContainerCDNMeta(s.Container.Name)
+		if err != nil {
+			return s.Info.URL, err
+		}
+		u, err = u.Parse(h["X-Cdn-Ssl-Uri"])
+		if err != nil {
+			return s.Info.URL, err
+		}
+		s.Info.URL = u
+	}
+	return s.Info.URL, nil
 }
