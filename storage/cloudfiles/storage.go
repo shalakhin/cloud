@@ -112,11 +112,11 @@ func (s *Storage) GetURL() *url.URL {
 	if u.RequestURI() == "/" {
 		h, err := s.Connection.ContainerCDNMeta(s.Container.Name)
 		if err != nil {
-			return s.Info.URL
+			panic(err)
 		}
 		u, err = u.Parse(h["X-Cdn-Ssl-Uri"])
 		if err != nil {
-			return s.Info.URL
+			panic(err)
 		}
 		s.Info.URL = u
 	}
