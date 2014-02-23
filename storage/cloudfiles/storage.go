@@ -102,9 +102,9 @@ func (s *Storage) Delete(filename string) error {
 }
 
 // GetURL returns url to the storage to use i.e. in templates
-func (s *Storage) GetURL() (*url.URL, error) {
+func (s *Storage) GetURL() *url.URL {
 	if !s.Connection.Authenticated() {
-		return new(url.URL), errors.New("not authenticated")
+		return new(url.URL)
 	}
 
 	u := s.Info.URL
@@ -112,13 +112,13 @@ func (s *Storage) GetURL() (*url.URL, error) {
 	if u.RequestURI() == "/" {
 		h, err := s.Connection.ContainerCDNMeta(s.Container.Name)
 		if err != nil {
-			return s.Info.URL, err
+			return s.Info.URL
 		}
 		u, err = u.Parse(h["X-Cdn-Ssl-Uri"])
 		if err != nil {
-			return s.Info.URL, err
+			return s.Info.URL
 		}
 		s.Info.URL = u
 	}
-	return s.Info.URL, nil
+	return s.Info.URL
 }

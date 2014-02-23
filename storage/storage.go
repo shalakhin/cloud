@@ -16,7 +16,7 @@ type (
 		Delete(filename string) error
 		Authenticate() error
 		GetContainer() (*Container, error)
-		GetURL() (*url.URL, error)
+		GetURL() *url.URL
 	}
 
 	// Provider for the cloud like Amazon, Rackspace etc.
