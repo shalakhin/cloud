@@ -13,6 +13,7 @@ type (
 	Storage struct {
 		Provider  storage.Provider
 		Container storage.Container
+		Info      *Info
 	}
 	// Info holds storage information
 	Info struct {
