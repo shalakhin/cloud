@@ -17,7 +17,7 @@ type (
 	}
 	// Info holds storage information
 	Info struct {
-		URL url.URL
+		URL *url.URL
 		Dir string
 	}
 )
@@ -43,7 +43,7 @@ func (s *Storage) Update(filename string, data []byte) error {
 		return err
 	}
 	// Create
-	if err = s.Create(filename); err != nil {
+	if err = s.Create(filename, data); err != nil {
 		return err
 	}
 	return nil
@@ -67,5 +67,8 @@ func (s *Storage) GetContainer() (*storage.Container, error) {
 
 // GetURL where it must be accessed
 func (s *Storage) GetURL() *url.URL {
+	if s.Info.URL.String() != "/" {
+		return s.Info.URL
+	}
 	return new(url.URL)
 }
