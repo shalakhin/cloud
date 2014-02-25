@@ -220,7 +220,7 @@ func Sync(name string) {
 			Provider:   p,
 			Container:  c,
 			Info:       &cloudfiles.Info{},
-			Connection: rs.RsConnection{},
+			Conn: rs.RsConnection{},
 		}
 	default:
 		// TODO what would be better to write here

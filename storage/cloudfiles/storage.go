@@ -15,7 +15,7 @@ type (
 		Provider   storage.Provider
 		Container  storage.Container
 		Info       *Info
-		Connection rs.RsConnection
+		Conn rs.RsConnection
 	}
 	// Info holds storage info
 	Info struct {
@@ -45,17 +45,17 @@ func (s *Storage) GetContainer() (*storage.Container, error) {
 
 // Authenticate CloudFiles storage
 func (s *Storage) Authenticate() error {
-	s.Connection = rs.RsConnection{}
-	s.Connection.UserName = s.Provider.Name
-	s.Connection.ApiKey = s.Provider.Key
-	s.Connection.AuthUrl = s.GetAuthURL()
-	s.Connection.Region = s.Provider.AuthURL
+	s.Conn = rs.RsConnection{}
+	s.Conn.UserName = s.Provider.Name
+	s.Conn.ApiKey = s.Provider.Key
+	s.Conn.AuthUrl = s.GetAuthURL()
+	s.Conn.Region = s.Provider.AuthURL
 
-	if err := s.Connection.Authenticate(); err != nil {
+	if err := s.Conn.Authenticate(); err != nil {
 		panic(err)
 	}
 	// Set larger data timeout to reduce number of failed transfer
-	s.Connection.Timeout = time.Duration(90) * time.Second
+	s.Conn.Timeout = time.Duration(90) * time.Second
 	// Set Info.URL empty as it must be initialized by GetURL
 	s.Info.URL = new(url.URL)
 	return nil
@@ -63,10 +63,10 @@ func (s *Storage) Authenticate() error {
 
 // Create file
 func (s *Storage) Create(filename string, data []byte) error {
-	if !s.Connection.Authenticated() {
+	if !s.Conn.Authenticated() {
 		return fmt.Errorf("not authenticated")
 	}
-	if err := s.Connection.ObjectPutBytes(s.Container.Name, filename, data, ""); err != nil {
+	if err := s.Conn.ObjectPutBytes(s.Container.Name, filename, data, ""); err != nil {
 		return fmt.Errorf(err.Error())
 	}
 	return nil
@@ -74,7 +74,7 @@ func (s *Storage) Create(filename string, data []byte) error {
 
 // Read file
 func (s *Storage) Read(filename string) ([]byte, error) {
-	data, err := s.Connection.ObjectGetBytes(s.Container.Name, filename)
+	data, err := s.Conn.ObjectGetBytes(s.Container.Name, filename)
 	if err != nil {
 		return []byte(""), err
 	}
@@ -83,7 +83,7 @@ func (s *Storage) Read(filename string) ([]byte, error) {
 
 // Update file
 func (s *Storage) Update(filename string, data []byte) error {
-	if !s.Connection.Authenticated() {
+	if !s.Conn.Authenticated() {
 		return fmt.Errorf("not authenticated")
 	}
 	// delete
@@ -101,10 +101,10 @@ func (s *Storage) Update(filename string, data []byte) error {
 
 // Delete file
 func (s *Storage) Delete(filename string) error {
-	if !s.Connection.Authenticated() {
+	if !s.Conn.Authenticated() {
 		return fmt.Errorf("not authenticated")
 	}
-	if err := s.Connection.ObjectDelete(s.Container.Name, filename); err != nil {
+	if err := s.Conn.ObjectDelete(s.Container.Name, filename); err != nil {
 		return err
 	}
 	return nil
@@ -112,8 +112,8 @@ func (s *Storage) Delete(filename string) error {
 
 // GetURL returns url to the storage to use i.e. in templates
 func (s *Storage) GetURL() *url.URL {
-	if !s.Connection.Authenticated() {
-		err := s.Connection.Authenticate()
+	if !s.Conn.Authenticated() {
+		err := s.Conn.Authenticate()
 		if err != nil {
 			panic(err)
 		}
@@ -122,7 +122,7 @@ func (s *Storage) GetURL() *url.URL {
 	u := s.Info.URL
 	// generate it if not exist
 	if u.RequestURI() == "/" {
-		h, err := s.Connection.ContainerCDNMeta(s.Container.Name)
+		h, err := s.Conn.ContainerCDNMeta(s.Container.Name)
 		if err != nil {
 			panic(err)
 		}
