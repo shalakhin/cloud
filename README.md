@@ -7,7 +7,18 @@ Sync your files with cloud storages (like Amazon S3, Rackspace CloudFiles etc.)
 I decided it would be great to have simple abstaction layer for cloud storage
 to sync data with CLI and to integrate it inside the app.
 
-That's why `github.com/OShalakhin/cloud` is CLI.
+That's why `github.com/OShalakhin/cloud` is CLI and packages inside are API.
+
+## Usage
+
+```bash
+$ cloud init # edit created files
+$ cloud sync # synchronize files
+```
+
+Yep. So simple.
+
+## Config files
 
 `github.com/OShalakhin/cloud/storage` and other parts are for integration into
 the apps. Tests will be supplied later.
