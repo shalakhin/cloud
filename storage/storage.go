@@ -49,4 +49,6 @@ const (
 	CLOUDFILES = "CloudFiles"
 	// S3 name for Amazon S3
 	S3 = "S3"
+	// Local storage
+	LOCAL = "Local"
 )

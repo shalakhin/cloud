@@ -217,10 +217,10 @@ func Sync(name string) {
 			panic(err)
 		}
 		s = &cloudfiles.Storage{
-			Provider:   p,
-			Container:  c,
-			Info:       &cloudfiles.Info{},
-			Conn: rs.RsConnection{},
+			Provider:  p,
+			Container: c,
+			Info:      &cloudfiles.Info{},
+			Conn:      rs.RsConnection{},
 		}
 	default:
 		// TODO what would be better to write here

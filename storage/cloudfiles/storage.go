@@ -12,10 +12,10 @@ import (
 type (
 	// Storage is an implementation of Rackspace CloudFiles cloud storage
 	Storage struct {
-		Provider   storage.Provider
-		Container  storage.Container
-		Info       *Info
-		Conn rs.RsConnection
+		Provider  storage.Provider
+		Container storage.Container
+		Info      *Info
+		Conn      rs.RsConnection
 	}
 	// Info holds storage info
 	Info struct {
