@@ -63,7 +63,9 @@ func (s *Storage) Authenticate() error {
 
 // Create file
 func (s *Storage) Create(filename string, data []byte) error {
-	// s.Authenticate()
+	if !s.Connection.Authenticated() {
+		return fmt.Errorf("not authenticated")
+	}
 	if err := s.Connection.ObjectPutBytes(s.Container.Name, filename, data, ""); err != nil {
 		return fmt.Errorf(err.Error())
 	}
@@ -81,9 +83,12 @@ func (s *Storage) Read(filename string) ([]byte, error) {
 
 // Update file
 func (s *Storage) Update(filename string, data []byte) error {
+	if !s.Connection.Authenticated() {
+		return fmt.Errorf("not authenticated")
+	}
 	// delete
 	if err := s.Delete(filename); err != nil {
-		panic(err)
+		return err
 	}
 	// create new
 	return s.Create(filename, data)
@@ -96,6 +101,9 @@ func (s *Storage) Update(filename string, data []byte) error {
 
 // Delete file
 func (s *Storage) Delete(filename string) error {
+	if !s.Connection.Authenticated() {
+		return fmt.Errorf("not authenticated")
+	}
 	if err := s.Connection.ObjectDelete(s.Container.Name, filename); err != nil {
 		return err
 	}

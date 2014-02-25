@@ -127,10 +127,10 @@ func IsExists(filename string) bool {
 func CreateConfig(filename string, v interface{}) error {
 	template, err := json.MarshalIndent(v, "", "    ")
 	if err != nil {
-		panic(err)
+		return err
 	}
 	if err = ioutil.WriteFile(filename, template, 0644); err != nil {
-		panic(err)
+		return err
 	}
 	return nil
 }
