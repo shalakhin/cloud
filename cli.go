@@ -31,8 +31,9 @@ var (
 
 // GetIgnoreList returns pattern to ignore paths based on .cloudignore
 func GetIgnoreList() []string {
-	f, err := os.Open(cloudIgnoreFile)
-	if err != nil {
+	var f *os.File
+	var err error
+	if f, err = os.Open(cloudIgnoreFile); err != nil {
 		return []string{"a^"}
 	}
 	str := []string{}
@@ -93,18 +94,18 @@ func GetContainerURL(name string) {
 
 // GetCore returns parsed .cloudcore struct
 func GetCore() (storage.Core, error) {
-	core := storage.Core{}
-	// open file
-	u, err := user.Current()
-	if err != nil {
+	var core storage.Core
+	var err error
+	var u *user.User
+	core = storage.Core{}
+	if u, err = user.Current(); err != nil {
 		return core, err
 	}
 	corepath := path.Join(u.HomeDir, cloudCoreFile)
-	data, err := ioutil.ReadFile(corepath)
-	if err != nil {
+	var data []byte
+	if data, err = ioutil.ReadFile(corepath); err != nil {
 		return core, err
 	}
-	// parse it
 	if err = json.Unmarshal(data, &core); err != nil {
 		return core, err
 	}
@@ -124,13 +125,12 @@ func GetProvider(container *storage.Container, core *storage.Core) (storage.Prov
 
 // GetCloud returns parsed .cloud struct
 func GetCloud() (storage.Cloud, error) {
+	var data []byte
+	var err error
 	cloud := storage.Cloud{}
-	// open file
-	data, err := ioutil.ReadFile(cloudFile)
-	if err != nil {
+	if data, err = ioutil.ReadFile(cloudFile); err != nil {
 		return cloud, err
 	}
-	// parse
 	if err = json.Unmarshal(data, &cloud); err != nil {
 		return cloud, err
 	}
@@ -156,8 +156,8 @@ func GetContainer(name string, cloud *storage.Cloud) (storage.Container, error) 
 
 // IsExists checks if config exists
 func IsExists(filename string) bool {
-	_, err := os.Stat(filename)
-	if err != nil {
+	var err error
+	if _, err = os.Stat(filename); err != nil {
 		if os.IsNotExist(err) {
 			return false
 		}
@@ -167,8 +167,9 @@ func IsExists(filename string) bool {
 
 // CreateConfig with filename and defined structure
 func CreateConfig(filename string, v interface{}) error {
-	template, err := json.MarshalIndent(v, "", "    ")
-	if err != nil {
+	var err error
+	var template []byte
+	if template, err = json.MarshalIndent(v, "", "    "); err != nil {
 		return err
 	}
 	if err = ioutil.WriteFile(filename, template, 0644); err != nil {
@@ -179,8 +180,9 @@ func CreateConfig(filename string, v interface{}) error {
 
 func initConfigs() {
 	// core
-	u, err := user.Current()
-	if err != nil {
+	var u *user.User
+	var err error
+	if u, err = user.Current(); err != nil {
 		panic(err)
 	}
 	cloudcorepath := path.Join(u.HomeDir, cloudCoreFile)
@@ -229,35 +231,31 @@ func initConfigs() {
 func Sync(name string) {
 	fmt.Printf("Beginning sync with container: \"%s\"\n", name)
 	// get .cloudcore
-	core, err := GetCore()
-	if err != nil {
+	var core storage.Core
+	var err error
+	if core, err = GetCore(); err != nil {
 		panic(err)
 	}
 	fmt.Println("Found\t.cloudcore")
 	// get .cloud
-	cloud, err := GetCloud()
-	if err != nil {
+	var cloud storage.Cloud
+	if cloud, err = GetCloud(); err != nil {
 		panic(err)
 	}
 	fmt.Println("Found\t.cloud")
-	// auth container
-	// get container by name
-	c, err := GetContainer(name, &cloud)
-	if err != nil {
+	var c storage.Container
+	if c, err = GetContainer(name, &cloud); err != nil {
 		panic(err)
 	}
 	// get container provider
 	var s storage.Storage
+	var p storage.Provider
 	switch {
 	case c.Provider == storage.CLOUDFILES:
-		p, err := GetProvider(&c, &core)
-		if err != nil {
+		if p, err = GetProvider(&c, &core); err != nil {
 			panic(err)
 		}
 		fmt.Println("Container found:\t", c.Name)
-		if err != nil {
-			panic(err)
-		}
 		s = &cloudfiles.Storage{
 			Provider:  p,
 			Container: c,
@@ -275,8 +273,8 @@ func Sync(name string) {
 	}
 	fmt.Println("Authenticated")
 	// walk files upload file to the cloud
-	dir, err := os.Getwd()
-	if err != nil {
+	var dir string
+	if dir, err = os.Getwd(); err != nil {
 		panic(err)
 	}
 	if err = filepath.Walk(dir, func(filename string, info os.FileInfo, err error) error {
@@ -305,13 +303,12 @@ func Sync(name string) {
 
 // IsIgnored path or not. Data is taken from .cloudignore
 func IsIgnored(filename string) bool {
-	// TODO I am sure it can be done in more elegant and efficient way
+	var err error
 	for _, v := range ignorelist {
-		re, err := regexp.Compile("^" + v)
-		if err != nil {
+		var re *regexp.Regexp
+		if re, err = regexp.Compile("^" + v); err != nil {
 			panic(err)
 		}
-		// if match found file must be ignored
 		if re.MatchString(filename) {
 			return true
 		}
