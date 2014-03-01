@@ -16,6 +16,7 @@ const (
 	COMMANDS = "COMMANDS\n" +
 		"\tinit\tinitialize .cloudcore and .cloud files\n" +
 		"\tsync\tsynchronize folder with the cloud\n" +
+		"\turl\tshow container url\n" +
 		"\tignore\tignore particular file with .cloudignore\n" +
 		"\tclear\tclear container\n" +
 		"\thelp\tshow this message\n\n"
@@ -24,9 +25,21 @@ const (
 		"\tOlexandr Shalakhin <olexandr@shalakhin.com>\n\n"
 )
 
+// usage is responsible to generate command help message
 func usage() {
 	fmt.Printf(DESCRIPTION + VERSION + COMMANDS + CONTRIBUTORS)
 	flag.PrintDefaults()
+}
+
+// getContainerName if it is presented in args as a second parameter
+func getContainerName(args []string) string {
+	// default container is the first in .cloud
+	container := ""
+	if len(args) > 2 {
+		// use defined
+		container = args[1]
+	}
+	return container
 }
 
 func main() {
@@ -38,13 +51,9 @@ func main() {
 	case args[0] == "init":
 		initConfigs()
 	case args[0] == "sync":
-		// default container is the first in .cloud
-		container := ""
-		if len(args) > 2 {
-			// use defined
-			container = args[1]
-		}
-		Sync(container)
+		Sync(getContainerName(args))
+	case args[0] == "url":
+		GetContainerURL(getContainerName(args))
 	case args[0] == "ignore":
 		fmt.Println("Nothing here yet...")
 	case args[0] == "clear":

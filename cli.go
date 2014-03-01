@@ -49,6 +49,48 @@ func GetIgnoreList() []string {
 	return str
 }
 
+// GetContainerURL gets URL for the container by name. If no container is assigned
+// it uses the first container in the list
+func GetContainerURL(name string) {
+	// get .cloudcore
+	var core storage.Core
+	var err error
+	if core, err = GetCore(); err != nil {
+		panic(err)
+	}
+	// get .cloud
+	var cloud storage.Cloud
+	if cloud, err = GetCloud(); err != nil {
+		panic(err)
+	}
+	// get container from .cloud
+	var container storage.Container
+	if container, err = GetContainer(name, &cloud); err != nil {
+		panic(err)
+	}
+	var s storage.Storage
+	var provider storage.Provider
+	// define storage backend
+	switch {
+	case container.Provider == storage.CLOUDFILES:
+		if provider, err = GetProvider(&container, &core); err != nil {
+			panic(err)
+		}
+		fmt.Println("Container found:\t", container.Name)
+		s = &cloudfiles.Storage{
+			Provider:  provider,
+			Container: container,
+			Info:      &cloudfiles.Info{},
+			Conn:      rs.RsConnection{},
+		}
+	}
+	// Authenticate (after authentication it is possible to return URL
+	if err = s.Authenticate(); err != nil {
+		panic(err)
+	}
+	fmt.Println("Container url is:", s.GetURL().String())
+}
+
 // GetCore returns parsed .cloudcore struct
 func GetCore() (storage.Core, error) {
 	core := storage.Core{}
