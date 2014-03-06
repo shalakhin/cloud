@@ -45,10 +45,10 @@ type (
 )
 
 const (
-	// CLOUDFILES name for Rackspace CloudFiles storage
-	CLOUDFILES = "CloudFiles"
+	// CloudFiles name for Rackspace CloudFiles storage
+	CloudFiles = "CloudFiles"
 	// S3 name for Amazon S3
 	S3 = "S3"
 	// Local storage
-	LOCAL = "Local"
+	Local = "Local"
 )

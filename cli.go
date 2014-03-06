@@ -29,6 +29,11 @@ var (
 	ignorelist = GetIgnoreList()
 )
 
+// GetConfigs returns configs parsed from .cloudcore, and .cloud
+// func GetConfigs(name string) (*storage.Core, *storage.Cloud, *storage.Container, *storage.Container) {
+// 	return
+// }
+
 // GetIgnoreList returns pattern to ignore paths based on .cloudignore
 func GetIgnoreList() []string {
 	var f *os.File
@@ -73,7 +78,7 @@ func GetContainerURL(name string) {
 	var provider storage.Provider
 	// define storage backend
 	switch {
-	case container.Provider == storage.CLOUDFILES:
+	case container.Provider == storage.CloudFiles:
 		if provider, err = GetProvider(&container, &core); err != nil {
 			panic(err)
 		}
@@ -251,7 +256,7 @@ func Sync(name string) {
 	var s storage.Storage
 	var p storage.Provider
 	switch {
-	case c.Provider == storage.CLOUDFILES:
+	case c.Provider == storage.CloudFiles:
 		if p, err = GetProvider(&c, &core); err != nil {
 			panic(err)
 		}

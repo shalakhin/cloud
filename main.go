@@ -16,6 +16,7 @@ const (
 	COMMANDS = "COMMANDS\n" +
 		"\tinit\tinitialize .cloudcore and .cloud files\n" +
 		"\tsync\tsynchronize folder with the cloud\n" +
+		"\tupdate\tupdate file or folder in container\n" +
 		"\turl\tshow container url\n" +
 		"\tignore\tignore particular file with .cloudignore\n" +
 		"\tclear\tclear container\n" +
@@ -52,6 +53,8 @@ func main() {
 		initConfigs()
 	case args[0] == "sync":
 		Sync(getContainerName(args))
+	// case args[0] == "update":
+	// 	Update(, getContainerName(args))
 	case args[0] == "url":
 		GetContainerURL(getContainerName(args))
 	case args[0] == "ignore":
