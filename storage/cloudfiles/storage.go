@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/OShalakhin/cloud/storage"
 	"github.com/ncw/swift/rs"
+	"log"
 	"net/url"
 	"time"
 )
@@ -52,7 +53,7 @@ func (s *Storage) Authenticate() error {
 	s.Conn.Region = s.Provider.AuthURL
 
 	if err := s.Conn.Authenticate(); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	// Set larger data timeout to reduce number of failed transfer
 	s.Conn.Timeout = time.Duration(90) * time.Second
@@ -115,7 +116,7 @@ func (s *Storage) GetURL() *url.URL {
 	if !s.Conn.Authenticated() {
 		err := s.Conn.Authenticate()
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 	}
 
@@ -124,11 +125,11 @@ func (s *Storage) GetURL() *url.URL {
 	if u.RequestURI() == "/" {
 		h, err := s.Conn.ContainerCDNMeta(s.Container.Name)
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 		u, err = u.Parse(h["X-Cdn-Ssl-Uri"])
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 		s.Info.URL = u
 	}

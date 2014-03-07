@@ -9,6 +9,7 @@ import (
 	"github.com/OShalakhin/cloud/storage/cloudfiles"
 	"github.com/ncw/swift/rs"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/user"
 	"path"
@@ -50,7 +51,7 @@ func GetIgnoreList() []string {
 		}
 	}
 	if err := scanner.Err(); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	return str
 }
@@ -62,17 +63,17 @@ func GetContainerURL(name string) {
 	var core storage.Core
 	var err error
 	if core, err = GetCore(); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	// get .cloud
 	var cloud storage.Cloud
 	if cloud, err = GetCloud(); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	// get container from .cloud
 	var container storage.Container
 	if container, err = GetContainer(name, &cloud); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	var s storage.Storage
 	var provider storage.Provider
@@ -80,7 +81,7 @@ func GetContainerURL(name string) {
 	switch {
 	case container.Provider == storage.CloudFiles:
 		if provider, err = GetProvider(&container, &core); err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 		fmt.Println("Container found:\t", container.Name)
 		s = &cloudfiles.Storage{
@@ -92,7 +93,7 @@ func GetContainerURL(name string) {
 	}
 	// Authenticate (after authentication it is possible to return URL
 	if err = s.Authenticate(); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	fmt.Println("Container url is:", s.GetURL().String())
 }
@@ -188,7 +189,7 @@ func initConfigs() {
 	var u *user.User
 	var err error
 	if u, err = user.Current(); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	cloudcorepath := path.Join(u.HomeDir, cloudCoreFile)
 	if ok := IsExists(cloudcorepath); !ok {
@@ -204,7 +205,7 @@ func initConfigs() {
 			},
 		}
 		if err := CreateConfig(cloudcorepath, core); err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 		fmt.Println("Initializing file:\t", cloudcorepath)
 	}
@@ -219,14 +220,14 @@ func initConfigs() {
 			},
 		}
 		if err := CreateConfig(cloudFile, cloud); err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 		fmt.Println("Initializing file:\t", cloudFile)
 	}
 	// cloudignore
 	if ok := IsExists(cloudIgnoreFile); !ok {
 		if err = ioutil.WriteFile(cloudIgnoreFile, []byte("// Put here what to ignore. Syntax like .gitignore\n.cloud\n.cloudignore\n"), 0644); err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 		fmt.Println("Initializing file:\t", cloudIgnoreFile)
 	}
@@ -239,18 +240,18 @@ func Sync(name string) {
 	var core storage.Core
 	var err error
 	if core, err = GetCore(); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	fmt.Println("Found\t.cloudcore")
 	// get .cloud
 	var cloud storage.Cloud
 	if cloud, err = GetCloud(); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	fmt.Println("Found\t.cloud")
 	var c storage.Container
 	if c, err = GetContainer(name, &cloud); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	// get container provider
 	var s storage.Storage
@@ -258,7 +259,7 @@ func Sync(name string) {
 	switch {
 	case c.Provider == storage.CloudFiles:
 		if p, err = GetProvider(&c, &core); err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 		fmt.Println("Container found:\t", c.Name)
 		s = &cloudfiles.Storage{
@@ -274,35 +275,35 @@ func Sync(name string) {
 	}
 	// Authenticate
 	if err = s.Authenticate(); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	fmt.Println("Authenticated")
 	// walk files upload file to the cloud
 	var dir string
 	if dir, err = os.Getwd(); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	if err = filepath.Walk(dir, func(filename string, info os.FileInfo, err error) error {
 		// upload only files, not directories
 		if !info.IsDir() {
 			fp, err := filepath.Rel(dir, filename)
 			if err != nil {
-				panic(err)
+				log.Fatal(err)
 			}
 			if !IsIgnored(fp) {
 				data, err := ioutil.ReadFile(fp)
 				if err != nil {
-					panic(err)
+					log.Fatal(err)
 				}
 				fmt.Println("Sync\t", fp)
 				if err = s.Create(fp, data); err != nil {
-					panic(err)
+					log.Fatal(err)
 				}
 			}
 		}
 		return nil
 	}); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 }
 
@@ -312,7 +313,7 @@ func IsIgnored(filename string) bool {
 	for _, v := range ignorelist {
 		var re *regexp.Regexp
 		if re, err = regexp.Compile("^" + v); err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 		if re.MatchString(filename) {
 			return true
