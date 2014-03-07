@@ -65,10 +65,10 @@ func (s *Storage) Authenticate() error {
 // Create file
 func (s *Storage) Create(filename string, data []byte) error {
 	if !s.Conn.Authenticated() {
-		return fmt.Errorf("not authenticated")
+		return fmt.Errorf("cloudfiles: not authenticated")
 	}
 	if err := s.Conn.ObjectPutBytes(s.Container.Name, filename, data, ""); err != nil {
-		return fmt.Errorf(err.Error())
+		return err
 	}
 	return nil
 }
@@ -85,7 +85,7 @@ func (s *Storage) Read(filename string) ([]byte, error) {
 // Update file
 func (s *Storage) Update(filename string, data []byte) error {
 	if !s.Conn.Authenticated() {
-		return fmt.Errorf("not authenticated")
+		return fmt.Errorf("cloudfiles: not authenticated")
 	}
 	// delete
 	if err := s.Delete(filename); err != nil {
@@ -103,7 +103,7 @@ func (s *Storage) Update(filename string, data []byte) error {
 // Delete file
 func (s *Storage) Delete(filename string) error {
 	if !s.Conn.Authenticated() {
-		return fmt.Errorf("not authenticated")
+		return fmt.Errorf("cloudfiles: not authenticated")
 	}
 	if err := s.Conn.ObjectDelete(s.Container.Name, filename); err != nil {
 		return err
@@ -120,18 +120,18 @@ func (s *Storage) GetURL() *url.URL {
 		}
 	}
 
-	u := s.Info.URL
+	endpoint := s.Info.URL
 	// generate it if not exist
-	if u.RequestURI() == "/" {
+	if endpoint.RequestURI() == "/" {
 		h, err := s.Conn.ContainerCDNMeta(s.Container.Name)
 		if err != nil {
 			log.Fatal(err)
 		}
-		u, err = u.Parse(h["X-Cdn-Ssl-Uri"])
+		endpoint, err = endpoint.Parse(h["X-Cdn-Ssl-Uri"])
 		if err != nil {
 			log.Fatal(err)
 		}
-		s.Info.URL = u
+		s.Info.URL = endpoint
 	}
 	return s.Info.URL
 }
