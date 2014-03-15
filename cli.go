@@ -46,7 +46,7 @@ func GetIgnoreList() []string {
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		text := scanner.Text()
-		if text[0:2] != "//" {
+		if len(text) > 2 && text[0:2] != "//" {
 			str = append(str, text)
 		}
 	}
