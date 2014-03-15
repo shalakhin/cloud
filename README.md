@@ -1,4 +1,4 @@
-# cloud
+# cloud [![GoDoc](https://godoc.org/github.com/OShalakhin/cloud?status.png)](https://godoc.org/github.com/OShalakhin/cloud)
 
 version: **0.1.0**
 
@@ -102,10 +102,6 @@ CONTRIBUTORS
     Olexandr Shalakhin <olexandr@shalakhin.com>
 
 ```
-
-## Docs
-
-See [Godoc](http://godoc.org/github.com/OShalakhin/cloud)
 
 ## TODO
 
