@@ -1,4 +1,4 @@
-# cloud [![GoDoc](https://godoc.org/github.com/OShalakhin/cloud?status.png)](https://godoc.org/github.com/OShalakhin/cloud)
+# cloud [![GoDoc](http://godoc.org/github.com/OShalakhin/cloud?status.png)](http://godoc.org/github.com/OShalakhin/cloud)
 
 version: **0.1.0**
 
